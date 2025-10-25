@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { login as loginApi, register as registerApi, logout as logoutApi, getCurrentUser, isAuthenticated } from '../../services/api/authService';
-import { LoginData, RegisterData } from '../../services/api/authService';
+import type { LoginData, RegisterData } from '../../services/api/authService';
 import toast from 'react-hot-toast';
 
 /**
