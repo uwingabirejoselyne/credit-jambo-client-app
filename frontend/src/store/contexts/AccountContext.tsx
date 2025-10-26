@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { getBalance, type AccountBalance } from '../../services/api/accountService';
+// Using mock services for demo (replace with real API services when backend is ready)
+import { getBalance, type AccountBalance } from '../../services/mock/accountService.mock';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 
@@ -27,12 +28,15 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({ children }) =>
   const [balance, setBalance] = useState<number>(0);
   const [currency, setCurrency] = useState<string>('RWF');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [hasFetched, setHasFetched] = useState<boolean>(false);
 
-  // Fetch balance when user is authenticated
+  // Fetch balance when user is authenticated - only once
   useEffect(() => {
-    if (isAuthenticated && user?.deviceVerified) {
+    if (isAuthenticated && user?.deviceVerified && !hasFetched) {
       refreshBalance();
+      setHasFetched(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.deviceVerified]);
 
   // Refresh balance from API

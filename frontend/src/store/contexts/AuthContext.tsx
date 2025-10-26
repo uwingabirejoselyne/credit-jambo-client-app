@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { login as loginApi, register as registerApi, logout as logoutApi, getCurrentUser, isAuthenticated } from '../../services/api/authService';
-import type { LoginData, RegisterData } from '../../services/api/authService';
+// Using mock services for demo (replace with real API services when backend is ready)
+import { login as loginApi, register as registerApi, logout as logoutApi, getCurrentUser, isAuthenticated } from '../../services/mock/authService.mock';
+import type { LoginData, RegisterData } from '../../services/mock/authService.mock';
 import toast from 'react-hot-toast';
 
 /**

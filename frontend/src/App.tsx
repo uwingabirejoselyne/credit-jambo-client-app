@@ -2,8 +2,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './store/contexts/AuthContext';
 import { AccountProvider } from './store/contexts/AccountContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { Register } from './pages/auth/Register';
 import { Login } from './pages/auth/Login';
+import { Dashboard } from './pages/dashboard/Dashboard';
 
 /**
  * Main App component with routing and providers
@@ -45,7 +47,14 @@ function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            {/* Add more routes later */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </AccountProvider>
       </AuthProvider>

@@ -1,22 +1,28 @@
 import React, { useState, type FormEvent } from 'react';
 import { Input, Button } from '../common';
 // Using mock services for demo (replace with real API services when backend is ready)
-import { deposit } from '../../services/mock/transactionService.mock';
-import { validateAmount } from '../../utils/validators';
+import { withdraw } from '../../services/mock/transactionService.mock';
+import { validateWithdrawal } from '../../utils/validators';
 import { sanitizeAmount } from '../../utils/sanitizer';
+import { formatCurrency } from '../../utils/formatters';
 import toast from 'react-hot-toast';
 
 /**
- * Deposit modal component
- * Allows users to add funds to their account
+ * Withdraw modal component
+ * Allows users to withdraw funds from their account
  */
 
-interface DepositModalProps {
+interface WithdrawModalProps {
   onClose: () => void;
   onSuccess: () => void;
+  currentBalance: number;
 }
 
-export const DepositModal: React.FC<DepositModalProps> = ({ onClose, onSuccess }) => {
+export const WithdrawModal: React.FC<WithdrawModalProps> = ({
+  onClose,
+  onSuccess,
+  currentBalance,
+}) => {
   const [formData, setFormData] = useState({
     amount: '',
     description: '',
@@ -42,7 +48,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ onClose, onSuccess }
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    const amountValidation = validateAmount(formData.amount);
+    const amountValidation = validateWithdrawal(formData.amount, currentBalance);
     if (!amountValidation.isValid) {
       newErrors.amount = amountValidation.error!;
     }
@@ -61,16 +67,16 @@ export const DepositModal: React.FC<DepositModalProps> = ({ onClose, onSuccess }
     try {
       setIsLoading(true);
 
-      await deposit({
+      await withdraw({
         amount: parseFloat(formData.amount),
         description: formData.description || undefined,
       });
 
-      toast.success(`Successfully deposited ${formData.amount}!`);
+      toast.success(`Successfully withdrew ${formData.amount}!`);
       onSuccess();
       onClose();
     } catch (error: any) {
-      const errorMessage = error?.message || 'Deposit failed. Please try again.';
+      const errorMessage = error?.message || 'Withdrawal failed. Please try again.';
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -92,13 +98,19 @@ export const DepositModal: React.FC<DepositModalProps> = ({ onClose, onSuccess }
 
         {/* Header */}
         <div className="mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-primary-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-red-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Make a Deposit</h2>
-          <p className="text-gray-600 mt-1">Add funds to your savings account</p>
+          <h2 className="text-2xl font-bold text-gray-900">Make a Withdrawal</h2>
+          <p className="text-gray-600 mt-1">Take out funds from your account</p>
+        </div>
+
+        {/* Available Balance */}
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200 rounded-xl p-4 mb-6">
+          <p className="text-sm text-gray-600 mb-1">Available Balance</p>
+          <p className="text-2xl font-bold text-gray-900">{formatCurrency(currentBalance)}</p>
         </div>
 
         {/* Form */}
@@ -111,8 +123,8 @@ export const DepositModal: React.FC<DepositModalProps> = ({ onClose, onSuccess }
             onChange={handleChange}
             error={errors.amount}
             required
-            placeholder="10000"
-            helperText="Enter the amount you want to deposit"
+            placeholder="5000"
+            helperText={`Maximum: ${formatCurrency(currentBalance)}`}
           />
 
           <div>
@@ -125,7 +137,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ onClose, onSuccess }
               onChange={handleChange}
               className="w-full px-4 py-3 border-2 border-gray-200 hover:border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all duration-200 bg-white resize-none"
               rows={3}
-              placeholder="What is this deposit for?"
+              placeholder="What is this withdrawal for?"
             />
           </div>
 
@@ -140,10 +152,11 @@ export const DepositModal: React.FC<DepositModalProps> = ({ onClose, onSuccess }
             </Button>
             <Button
               type="submit"
+              variant="danger"
               fullWidth
               isLoading={isLoading}
             >
-              Deposit
+              Withdraw
             </Button>
           </div>
         </form>

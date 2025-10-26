@@ -1,4 +1,4 @@
-import React, { useState, type FormEvent } from 'react';
+import React, { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../store/contexts/AuthContext';
 import { Input, Button } from '../../components/common';
@@ -13,7 +13,8 @@ import { sanitizeEmail } from '../../utils/sanitizer';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login, user } = useAuth();
+  const { login, user, isAuthenticated } = useAuth();
+  const hasRedirected = useRef(false);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -26,7 +27,7 @@ export const Login: React.FC = () => {
   const [showDeviceWarning, setShowDeviceWarning] = useState(false);
 
   // Get device ID on component mount
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchDeviceId = async () => {
       const id = await getDeviceId();
       setDeviceId(id);
@@ -34,12 +35,13 @@ export const Login: React.FC = () => {
     fetchDeviceId();
   }, []);
 
-  // Redirect to dashboard if already authenticated and device verified
-  React.useEffect(() => {
-    if (user && user.deviceVerified) {
-      navigate('/dashboard');
+  // Redirect to dashboard if already authenticated - only once
+  useEffect(() => {
+    if (isAuthenticated && user?.deviceVerified && !hasRedirected.current) {
+      hasRedirected.current = true;
+      navigate('/dashboard', { replace: true });
     }
-  }, [user, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,16 +98,7 @@ export const Login: React.FC = () => {
         deviceId: deviceId,
       });
 
-      // Check if device is verified
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-
-      if (currentUser.deviceVerified) {
-        // Navigate to dashboard if device is verified
-        navigate('/dashboard');
-      } else {
-        // Show warning that device needs verification
-        setShowDeviceWarning(true);
-      }
+      // Navigation will be handled by the useEffect above after login updates user state
     } catch (error: any) {
       console.error('Login error:', error);
 
@@ -113,10 +106,14 @@ export const Login: React.FC = () => {
       if (error?.message?.includes('device')) {
         setShowDeviceWarning(true);
       }
-    } finally {
       setIsLoading(false);
     }
   };
+
+  // Don't render login form if already authenticated and redirecting
+  if (isAuthenticated && user?.deviceVerified) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -175,7 +172,7 @@ export const Login: React.FC = () => {
               onChange={handleChange}
               error={errors.email}
               required
-              placeholder="john.doe@example.com"
+              placeholder="demo@creditjambo.com"
               autoComplete="email"
             />
 

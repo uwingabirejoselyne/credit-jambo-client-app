@@ -29,11 +29,6 @@ export const Dashboard: React.FC = () => {
     }
   }, [balance]);
 
-  // Refresh balance on mount
-  useEffect(() => {
-    refreshBalance();
-  }, []);
-
   if (!user?.deviceVerified) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
