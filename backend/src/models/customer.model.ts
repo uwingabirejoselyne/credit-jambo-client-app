@@ -1,15 +1,17 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+// Interface for Device (each customer can have multiple devices)
 export interface IDevice {
-  deviceId: string;
-  deviceIdHash: string;
-  isVerified: boolean;
-  verifiedAt?: Date;
-  verifiedBy?: mongoose.Types.ObjectId;
-  lastLoginAt?: Date;
-  createdAt: Date;
+  deviceId: string;           // Original device ID
+  deviceIdHash: string;       // Hashed version for storage
+  isVerified: boolean;        // Must be verified by admin
+  verifiedAt?: Date;          // When admin verified
+  verifiedBy?: mongoose.Types.ObjectId;  // Which admin verified
+  lastLoginAt?: Date;         // Last login from this device
+  createdAt: Date;           // When device was registered
 }
 
+// Interface for Customer document
 export interface ICustomer extends Document {
   firstName: string;
   lastName: string;
@@ -24,6 +26,7 @@ export interface ICustomer extends Document {
   lastLoginAt?: Date;
 }
 
+// Schema for Device
 const DeviceSchema = new Schema<IDevice>({
   deviceId: {
     type: String,
@@ -36,7 +39,7 @@ const DeviceSchema = new Schema<IDevice>({
   },
   isVerified: {
     type: Boolean,
-    default: false,
+    default: false,  // New devices are not verified by default
   },
   verifiedAt: {
     type: Date,
@@ -54,6 +57,7 @@ const DeviceSchema = new Schema<IDevice>({
   },
 });
 
+// Schema for Customer
 const CustomerSchema = new Schema<ICustomer>(
   {
     firstName: {
@@ -104,11 +108,11 @@ const CustomerSchema = new Schema<ICustomer>(
     },
   },
   {
-    timestamps: true,
+    timestamps: true,  // Automatically adds createdAt and updatedAt
     toJSON: {
       virtuals: true,
       transform: function (_doc, ret) {
-        delete (ret as any).password;
+        delete (ret as any).password;  // Never send password in JSON
         return ret;
       },
     },
@@ -122,7 +126,6 @@ const CustomerSchema = new Schema<ICustomer>(
 CustomerSchema.index({ email: 1 });
 CustomerSchema.index({ phone: 1 });
 CustomerSchema.index({ 'devices.deviceIdHash': 1 });
-CustomerSchema.index({ createdAt: -1 });
 
 // Virtual for full name
 CustomerSchema.virtual('fullName').get(function (this: ICustomer) {
@@ -133,11 +136,6 @@ CustomerSchema.virtual('fullName').get(function (this: ICustomer) {
 CustomerSchema.methods.isDeviceVerified = function (deviceIdHash: string): boolean {
   const device = this.devices.find((d: IDevice) => d.deviceIdHash === deviceIdHash);
   return device ? device.isVerified : false;
-};
-
-// Method to get device by hash
-CustomerSchema.methods.getDeviceByHash = function (deviceIdHash: string): IDevice | undefined {
-  return this.devices.find((d: IDevice) => d.deviceIdHash === deviceIdHash);
 };
 
 export const Customer = mongoose.model<ICustomer>('Customer', CustomerSchema);
