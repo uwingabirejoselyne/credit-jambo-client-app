@@ -6,16 +6,16 @@ import { AppError } from '../utils/error.util';
  * Handle validation errors
  */
 export const handleValidationErrors = (
-  req: Request,
-  res: Response,
-  next: NextFunction
+  _req: Request,
+  _res: Response,
+  _next: NextFunction
 ): void => {
-  const errors = validationResult(req);
+  const errors = validationResult(_req);
   if (!errors.isEmpty()) {
     const errorMessages = errors.array().map((err) => err.msg);
     throw new AppError(errorMessages.join(', '), 400);
   }
-  next();
+  _next();
 };
 
 /**

@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 interface EnvConfig {
+  isDevelopment: any;
   NODE_ENV: string;
   PORT: number;
   API_VERSION: string;
@@ -44,6 +45,7 @@ export const envConfig: EnvConfig = {
   RATE_LIMIT_MAX_REQUESTS: parseInt(getEnvVariable('RATE_LIMIT_MAX_REQUESTS', '100'), 10),
   CORS_ORIGIN: getEnvVariable('CORS_ORIGIN', 'http://localhost:3000'),
   LOG_LEVEL: getEnvVariable('LOG_LEVEL', 'info'),
+  isDevelopment: undefined
 };
 
 export const isProduction = envConfig.NODE_ENV === 'production';

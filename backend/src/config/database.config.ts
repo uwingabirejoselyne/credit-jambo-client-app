@@ -83,4 +83,5 @@ class DatabaseConnection {
   }
 }
 
+
 export const databaseConnection = DatabaseConnection.getInstance();

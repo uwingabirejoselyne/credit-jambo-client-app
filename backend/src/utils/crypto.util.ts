@@ -63,3 +63,12 @@ export class CryptoUtil {
     return `${Date.now()}_${crypto.randomBytes(16).toString('hex')}`;
   }
 }
+
+// Standalone helper functions for convenience
+export const hashData = (data: string): string => {
+  return CryptoUtil.hashDeviceId(data);
+};
+
+export const generateToken = (length?: number): string => {
+  return CryptoUtil.generateToken(length);
+};

@@ -5,7 +5,6 @@ import { Customer } from '../models/customer.model';
 import { Transaction } from '../models/transaction.model';
 import { AppError } from '../utils/error.util';
 import { sendSuccess } from '../utils/response.util';
-import { hashData } from '../utils/crypto.util';
 
 /**
  * Create new admin (super admin only)

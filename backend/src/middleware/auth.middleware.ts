@@ -29,13 +29,13 @@ interface JWTPayload {
  * Verify JWT token and attach user to request
  */
 export const authenticate = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+  _req: Request,
+  _res: Response,
+  _next: NextFunction
 ): Promise<void> => {
   try {
     // Get token from header
-    const authHeader = req.headers.authorization;
+    const authHeader = _req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new AppError('No token provided', 401);
     }
@@ -62,9 +62,9 @@ export const authenticate = async (
     await session.save();
 
     // Attach user info to request
-    req.userId = decoded.userId;
-    req.userType = decoded.userType;
-    req.sessionId = decoded.sessionId;
+    _req.userId = decoded.userId;
+    _req.userType = decoded.userType;
+    _req.sessionId = decoded.sessionId;
 
     // Fetch full user data based on type
     if (decoded.userType === SessionType.CUSTOMER) {
@@ -72,23 +72,23 @@ export const authenticate = async (
       if (!customer || !customer.isActive) {
         throw new AppError('Customer account not found or inactive', 401);
       }
-      req.user = customer;
+      _req.user = customer;
     } else if (decoded.userType === SessionType.ADMIN) {
       const admin = await Admin.findById(decoded.userId);
       if (!admin || !admin.isActive) {
         throw new AppError('Admin account not found or inactive', 401);
       }
-      req.user = admin;
+      _req.user = admin;
     }
 
-    next();
+    _next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      next(new AppError('Invalid token', 401));
+      _next(new AppError('Invalid token', 401));
     } else if (error instanceof jwt.TokenExpiredError) {
-      next(new AppError('Token expired', 401));
+      _next(new AppError('Token expired', 401));
     } else {
-      next(error);
+      _next(error);
     }
   }
 };
@@ -97,17 +97,17 @@ export const authenticate = async (
  * Require customer authentication
  */
 export const requireCustomer = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+  _req: Request,
+  _res: Response,
+  _next: NextFunction
 ): Promise<void> => {
   try {
-    if (req.userType !== SessionType.CUSTOMER) {
+    if (_req.userType !== SessionType.CUSTOMER) {
       throw new AppError('Customer access required', 403);
     }
-    next();
+    _next();
   } catch (error) {
-    next(error);
+    _next(error);
   }
 };
 
@@ -116,16 +116,16 @@ export const requireCustomer = async (
  */
 export const requireAdmin = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  _res: Response,
+  _next: NextFunction
 ): Promise<void> => {
   try {
     if (req.userType !== SessionType.ADMIN) {
       throw new AppError('Admin access required', 403);
     }
-    next();
+    _next();
   } catch (error) {
-    next(error);
+    _next(error);
   }
 };
 
@@ -133,20 +133,20 @@ export const requireAdmin = async (
  * Require specific admin role
  */
 export const requireRole = (...roles: AdminRole[]) => {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (_req: Request, _res: Response, _next: NextFunction): Promise<void> => {
     try {
-      if (req.userType !== SessionType.ADMIN) {
+      if (_req.userType !== SessionType.ADMIN) {
         throw new AppError('Admin access required', 403);
       }
 
-      const admin = req.user;
+      const admin = _req.user;
       if (!roles.includes(admin.role)) {
         throw new AppError('Insufficient permissions', 403);
       }
 
-      next();
+      _next();
     } catch (error) {
-      next(error);
+      _next(error);
     }
   };
 };
@@ -155,21 +155,21 @@ export const requireRole = (...roles: AdminRole[]) => {
  * Verify device for customer login
  */
 export const verifyDevice = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+  _req: Request,
+  _res: Response,
+  _next: NextFunction
 ): Promise<void> => {
   try {
-    if (req.userType !== SessionType.CUSTOMER) {
-      return next();
+    if (_req.userType !== SessionType.CUSTOMER) {
+      return _next();
     }
 
-    const deviceIdHash = req.headers['x-device-id'] as string;
+    const deviceIdHash = _req.headers['x-device-id'] as string;
     if (!deviceIdHash) {
       throw new AppError('Device ID required', 400);
     }
 
-    const customer = req.user;
+    const customer = _req.user;
     const device = customer.devices.find((d: any) => d.deviceIdHash === deviceIdHash);
 
     if (!device) {
@@ -180,8 +180,8 @@ export const verifyDevice = async (
       throw new AppError('Device not verified. Please contact admin.', 403);
     }
 
-    next();
+    _next();
   } catch (error) {
-    next(error);
+    _next(error);
   }
 };

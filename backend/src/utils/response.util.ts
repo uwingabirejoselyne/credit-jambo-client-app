@@ -98,3 +98,20 @@ export class ResponseUtil {
     return ResponseUtil.error(res, message, error, 500);
   }
 }
+
+// Standalone helper functions for convenience
+export const sendSuccess = <T = any>(
+  res: Response,
+  data: T,
+  statusCode: number = 200
+): Response => {
+  return ResponseUtil.success(res, 'Success', data, statusCode);
+};
+
+export const sendError = (
+  res: Response,
+  message: string,
+  statusCode: number = 400
+): Response => {
+  return ResponseUtil.error(res, message, undefined, statusCode);
+};

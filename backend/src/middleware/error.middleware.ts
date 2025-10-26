@@ -4,55 +4,55 @@ import { sendError } from '../utils/response.util';
 import { envConfig } from '../config/env.config';
 
 /**
- * Global error handler middleware
+ * Global error handler middlewareS
  */
 export const errorHandler = (
   err: Error | AppError,
-  req: Request,
-  res: Response,
-  next: NextFunction
+  _req: Request,
+  _res: Response,
+  _next: NextFunction
 ): void => {
   // Log error
   console.error('Error:', {
     message: err.message,
     stack: envConfig.isDevelopment ? err.stack : undefined,
-    url: req.url,
-    method: req.method,
+    url: _req.url,
+    method: _req.method,
   });
 
   // Handle AppError instances
   if (err instanceof AppError) {
-    sendError(res, err.message, err.statusCode);
+    sendError(_res, err.message, err.statusCode);
     return;
   }
 
   // Handle Mongoose validation errors
   if (err.name === 'ValidationError') {
-    sendError(res, err.message, 400);
+    sendError(_res, err.message, 400);
     return;
   }
 
   // Handle Mongoose duplicate key errors
   if (err.name === 'MongoServerError' && (err as any).code === 11000) {
     const field = Object.keys((err as any).keyPattern)[0];
-    sendError(res, `${field} already exists`, 409);
+    sendError(_res, `${field} already exists`, 409);
     return;
   }
 
   // Handle JWT errors
   if (err.name === 'JsonWebTokenError') {
-    sendError(res, 'Invalid token', 401);
+    sendError(_res, 'Invalid token', 401);
     return;
   }
 
   if (err.name === 'TokenExpiredError') {
-    sendError(res, 'Token expired', 401);
+    sendError(_res, 'Token expired', 401);
     return;
   }
 
   // Default error
   sendError(
-    res,
+    _res,
     envConfig.isDevelopment ? err.message : 'Internal server error',
     500
   );
@@ -63,8 +63,8 @@ export const errorHandler = (
  */
 export const notFoundHandler = (
   req: Request,
-  res: Response,
-  next: NextFunction
+  _res: Response,
+  _next: NextFunction
 ): void => {
-  next(new AppError(`Route ${req.originalUrl} not found`, 404));
+  _next(new AppError(`Route ${req.originalUrl} not found`, 404));
 };

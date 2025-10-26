@@ -199,7 +199,7 @@ export const getDevices = async (
 
     // Return devices without the actual deviceId (security)
     const devices = customer.devices.map((device) => ({
-      id: device._id,
+      id: (device as any)._id ?? (device as any).id,
       deviceIdHash: device.deviceIdHash,
       isVerified: device.isVerified,
       verifiedAt: device.verifiedAt,
