@@ -19,6 +19,7 @@ export interface ICustomer extends Document {
   phone: string;
   password: string;
   balance: number;
+  lowBalanceThreshold: number; // Threshold for low balance warnings
   devices: IDevice[];
   isActive: boolean;
   createdAt: Date;
@@ -97,6 +98,11 @@ const CustomerSchema = new Schema<ICustomer>(
       type: Number,
       default: 0,
       min: [0, 'Balance cannot be negative'],
+    },
+    lowBalanceThreshold: {
+      type: Number,
+      default: 10000, // Default threshold for low balance warnings
+      min: [0, 'Threshold cannot be negative'],
     },
     devices: [DeviceSchema],
     isActive: {

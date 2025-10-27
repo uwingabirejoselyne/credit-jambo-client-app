@@ -10,8 +10,7 @@ import { envConfig } from './config/env.config';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 
 // Import routes
-import authRoutes from './routes/auth.routes';
-import customerRoutes from './routes/customer.routes';
+import routes from './routes';
 
 const app: Application = express();
 
@@ -48,8 +47,7 @@ app.get('/health', (_, res) => {
 });
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/customers', customerRoutes);
+app.use('/api', routes);
 
 // 404 handler
 app.use(notFoundHandler);

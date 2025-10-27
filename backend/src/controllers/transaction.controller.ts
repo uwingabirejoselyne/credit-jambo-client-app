@@ -172,7 +172,7 @@ export const createTransfer = async (
       reference: `TRF-${uuidv4().substring(0, 8).toUpperCase()}`,
       processedBy: req.userId,
       processedAt: new Date(),
-    }], { session });
+    }], { session }) as any;
 
     // Create transfer in transaction
     const transferInTx = await Transaction.create([{
@@ -187,7 +187,7 @@ export const createTransfer = async (
       relatedTransactionId: transferOutTx[0]._id,
       processedBy: req.userId,
       processedAt: new Date(),
-    }], { session });
+    }], { session }) as any;
 
     // Link the transactions
     transferOutTx[0].relatedTransactionId = transferInTx[0]._id;
@@ -214,6 +214,163 @@ export const createTransfer = async (
     next(error);
   } finally {
     session.endSession();
+  }
+};
+
+/**
+ * Customer deposit (Self-service)
+ */
+export const customerDeposit = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { amount, description } = req.body;
+    const customerId = req.userId; // From auth middleware
+
+    const customer = await Customer.findById(customerId).session(session);
+    if (!customer) {
+      throw new AppError('Customer not found', 404);
+    }
+
+    if (!customer.isActive) {
+      throw new AppError('Account is inactive', 403);
+    }
+
+    const balanceBefore = customer.balance;
+    const balanceAfter = balanceBefore + amount;
+
+    // Create transaction
+    const transaction = await Transaction.create([{
+      customerId: customer._id,
+      type: TransactionType.DEPOSIT,
+      amount,
+      balanceBefore,
+      balanceAfter,
+      status: TransactionStatus.COMPLETED,
+      description,
+      reference: `DEP-${uuidv4().substring(0, 8).toUpperCase()}`,
+      processedAt: new Date(),
+    }], { session });
+
+    // Update customer balance
+    customer.balance = balanceAfter;
+    await customer.save({ session });
+
+    await session.commitTransaction();
+
+    sendSuccess(res, {
+      message: 'Deposit successful',
+      data: transaction[0],
+    }, 201);
+  } catch (error) {
+    await session.abortTransaction();
+    next(error);
+  } finally {
+    session.endSession();
+  }
+};
+
+/**
+ * Customer withdrawal (Self-service)
+ */
+export const customerWithdraw = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { amount, description } = req.body;
+    const customerId = req.userId; // From auth middleware
+
+    const customer = await Customer.findById(customerId).session(session);
+    if (!customer) {
+      throw new AppError('Customer not found', 404);
+    }
+
+    if (!customer.isActive) {
+      throw new AppError('Account is inactive', 403);
+    }
+
+    const balanceBefore = customer.balance;
+
+    // Prevent withdrawals exceeding balance
+    if (balanceBefore < amount) {
+      throw new AppError('Insufficient balance', 400);
+    }
+
+    const balanceAfter = balanceBefore - amount;
+
+    // Create transaction
+    const transaction = await Transaction.create([{
+      customerId: customer._id,
+      type: TransactionType.WITHDRAWAL,
+      amount,
+      balanceBefore,
+      balanceAfter,
+      status: TransactionStatus.COMPLETED,
+      description,
+      reference: `WTH-${uuidv4().substring(0, 8).toUpperCase()}`,
+      processedAt: new Date(),
+    }], { session });
+
+    // Update customer balance
+    customer.balance = balanceAfter;
+    await customer.save({ session });
+
+    await session.commitTransaction();
+
+    sendSuccess(res, {
+      message: 'Withdrawal successful',
+      data: transaction[0],
+    }, 201);
+  } catch (error) {
+    await session.abortTransaction();
+    next(error);
+  } finally {
+    session.endSession();
+  }
+};
+
+/**
+ * Get transaction history for customer
+ */
+export const getTransactionHistory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+    const customerId = req.userId; // From auth middleware
+
+    const transactions = await Transaction.find({ customerId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Transaction.countDocuments({ customerId });
+
+    sendSuccess(res, {
+      transactions,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    next(error);
   }
 };
 

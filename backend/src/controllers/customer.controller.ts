@@ -113,9 +113,13 @@ export const getBalance = async (
       throw new AppError('Customer not found', 404);
     }
 
+    const isLowBalance = customer.balance < customer.lowBalanceThreshold;
+
     sendSuccess(res, {
       balance: customer.balance,
       customerId: customer._id,
+      lowBalanceWarning: isLowBalance,
+      lowBalanceThreshold: customer.lowBalanceThreshold,
     });
   } catch (error) {
     next(error);
