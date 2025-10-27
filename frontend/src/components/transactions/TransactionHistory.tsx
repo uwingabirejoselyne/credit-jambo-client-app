@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Loading } from '../common';
 // Using mock services for demo (replace with real API services when backend is ready)
-import { getTransactionHistory, type Transaction } from '../../services/mock/transactionService.mock';
+import { getTransactionHistory, type Transaction } from '../../services/api/transactionService';
 import { formatCurrency, formatDateTime, getRelativeTime } from '../../utils/formatters';
 import toast from 'react-hot-toast';
 

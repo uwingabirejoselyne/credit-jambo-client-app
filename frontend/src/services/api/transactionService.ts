@@ -90,7 +90,7 @@ export const getTransactionHistory = async (
 ): Promise<{ transactions: Transaction[]; pagination: any }> => {
   try {
     const response = await axiosInstance.get<TransactionHistoryResponse>(
-      `/transactions/history?page=${page}&limit=${limit}`
+      `/customers/transactions?page=${page}&limit=${limit}`
     );
 
     if (response.data.success && response.data.data) {

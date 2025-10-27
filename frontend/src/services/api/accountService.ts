@@ -28,11 +28,24 @@ export interface ApiResponse<T> {
 }
 
 /**
+ * Safe log helper to avoid undefined data confusion
+ */
+const safeLogRequest = (method: string, url: string, data?: unknown) => {
+  const log: any = { method, url };
+  if (data !== undefined) log.data = data;
+  console.log("API Request:", log);
+};
+
+/**
  * Get user account balance
  */
 export const getBalance = async (): Promise<AccountBalance> => {
   try {
-    const response = await axiosInstance.get<ApiResponse<AccountBalance>>('/account/balance');
+    safeLogRequest('GET', '/customers/balance');
+
+    const response = await axiosInstance.get<ApiResponse<AccountBalance>>('/customers/balance');
+
+    console.log("API Response:", response.data);
 
     if (response.data.success && response.data.data) {
       return response.data.data;
@@ -40,6 +53,7 @@ export const getBalance = async (): Promise<AccountBalance> => {
 
     throw new Error(response.data.message || 'Failed to fetch balance');
   } catch (error: any) {
+    console.error("API Error:", error?.data || error.message);
     throw error?.data || error;
   }
 };
@@ -49,7 +63,11 @@ export const getBalance = async (): Promise<AccountBalance> => {
  */
 export const getProfile = async (): Promise<UserProfile> => {
   try {
+    safeLogRequest('GET', '/customers/profile');
+
     const response = await axiosInstance.get<ApiResponse<UserProfile>>('/account/profile');
+
+    console.log("API Response:", response.data);
 
     if (response.data.success && response.data.data) {
       return response.data.data;
@@ -57,6 +75,7 @@ export const getProfile = async (): Promise<UserProfile> => {
 
     throw new Error(response.data.message || 'Failed to fetch profile');
   } catch (error: any) {
+    console.error("API Error:", error?.data || error.message);
     throw error?.data || error;
   }
 };
@@ -66,7 +85,11 @@ export const getProfile = async (): Promise<UserProfile> => {
  */
 export const updateProfile = async (data: Partial<UserProfile>): Promise<UserProfile> => {
   try {
+    safeLogRequest('PUT', '/customers/profile', data);
+
     const response = await axiosInstance.put<ApiResponse<UserProfile>>('/account/profile', data);
+
+    console.log("API Response:", response.data);
 
     if (response.data.success && response.data.data) {
       return response.data.data;
@@ -74,6 +97,7 @@ export const updateProfile = async (data: Partial<UserProfile>): Promise<UserPro
 
     throw new Error(response.data.message || 'Failed to update profile');
   } catch (error: any) {
+    console.error("API Error:", error?.data || error.message);
     throw error?.data || error;
   }
 };
