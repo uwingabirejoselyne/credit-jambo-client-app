@@ -105,7 +105,7 @@ frontend/
 
 1. **Clone the repository** (if not already done):
    ```bash
-   git clone <repository-url>
+   git clone `https://github.com/uwingabirejoselyne/credit-jambo-client-app`
    cd credit-jambo-client-app/frontend
    ```
 
