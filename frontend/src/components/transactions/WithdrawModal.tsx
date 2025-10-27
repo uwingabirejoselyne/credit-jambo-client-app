@@ -1,7 +1,6 @@
 import React, { useState, type FormEvent } from 'react';
 import { Input, Button } from '../common';
-// Using mock services for demo (replace with real API services when backend is ready)
-import { withdraw } from '../../services/mock/transactionService.mock';
+import { withdraw } from '../../services/api/transactionService';
 import { validateWithdrawal } from '../../utils/validators';
 import { sanitizeAmount } from '../../utils/sanitizer';
 import { formatCurrency } from '../../utils/formatters';

@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-// Using mock services for demo (replace with real API services when backend is ready)
-import { getBalance, type AccountBalance } from '../../services/mock/accountService.mock';
+import { getBalance, type AccountBalance } from '../../services/api/accountService';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 

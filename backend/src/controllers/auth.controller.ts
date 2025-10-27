@@ -123,6 +123,12 @@ export const loginCustomer = async (
     customer.lastLoginAt = new Date();
     await customer.save();
 
+    // Invalidate old sessions for this device
+    await Session.updateMany(
+      { userId: customer._id, deviceIdHash, isActive: true },
+      { isActive: false }
+    );
+
     // Create session
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours
@@ -198,6 +204,12 @@ export const loginAdmin = async (
 
     // Hash device ID
     const deviceIdHash = hashData(deviceId);
+
+    // Invalidate old sessions for this admin device
+    await Session.updateMany(
+      { userId: admin._id, deviceIdHash, isActive: true },
+      { isActive: false }
+    );
 
     // Create session
     const expiresAt = new Date();

@@ -49,7 +49,21 @@ export interface JWTPayload {
  */
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
   try {
-    const response = await axiosInstance.post<AuthResponse>('/auth/register', data);
+    // Split fullName into firstName and lastName
+    const nameParts = data.fullName.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || nameParts[0]; // If no last name, use first name
+
+    const requestData = {
+      firstName,
+      lastName,
+      email: data.email,
+      phone: data.phone,
+      password: data.password,
+      deviceId: data.deviceId,
+    };
+
+    const response = await axiosInstance.post<AuthResponse>('/auth/register', requestData);
     return response.data;
   } catch (error: any) {
     throw error?.data || error;
@@ -61,19 +75,46 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
  */
 export const login = async (data: LoginData): Promise<AuthResponse> => {
   try {
-    const response = await axiosInstance.post<AuthResponse>('/auth/login', data);
+    const response = await axiosInstance.post('/auth/login/customer', data);
 
-    // Store tokens and user data
-    if (response.data.success && response.data.data) {
-      localStorage.setItem('accessToken', response.data.data.accessToken);
-      if (response.data.data.refreshToken) {
-        localStorage.setItem('refreshToken', response.data.data.refreshToken);
+    if (response.data.success) {
+      const token = response.data.token;
+      const customer = response.data.customer;
+
+      if (!token || !customer) {
+        throw new Error("Invalid login response");
       }
-      localStorage.setItem('user', JSON.stringify(response.data.data.user));
+
+      localStorage.setItem('accessToken', token);
+      localStorage.setItem('user', JSON.stringify({
+        id: customer.id,
+        email: customer.email,
+        fullName: `${customer.firstName} ${customer.lastName}`,
+        phone: customer.phone || '',
+        isVerified: true,
+        deviceVerified: true,
+      }));
+
+      return {
+        success: true,
+        message: response.data.message,
+        data: {
+          user: {
+            id: customer.id,
+            email: customer.email,
+            fullName: `${customer.firstName} ${customer.lastName}`,
+            phone: customer.phone || '',
+            isVerified: true,
+            deviceVerified: true,
+          },
+          accessToken: token,
+        }
+      };
     }
 
-    return response.data;
+    throw new Error('Login failed');
   } catch (error: any) {
+    console.log(error);
     throw error?.data || error;
   }
 };
