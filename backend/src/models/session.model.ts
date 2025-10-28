@@ -84,7 +84,7 @@ const SessionSchema = new Schema<ISession>(
 // Indexes for better query performance
 SessionSchema.index({ userId: 1, userType: 1, isActive: 1 });
 SessionSchema.index({ deviceIdHash: 1, isActive: 1 });
-SessionSchema.index({ expiresAt: 1 }); // For cleanup of expired sessions
+// Note: expiresAt already has an index from field definition (line 65)
 
 // Virtual to check if session is expired
 SessionSchema.virtual('isExpired').get(function (this: ISession) {

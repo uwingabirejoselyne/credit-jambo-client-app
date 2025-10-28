@@ -1,8 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcryptjs';
-import { Customer } from '../models/customer.model';
-import { Transaction } from '../models/transaction.model';
-import { AppError } from '../utils/error.util';
+import { CustomerService } from '../services/customer.service';
 import { sendSuccess } from '../utils/response.util';
 
 /**
@@ -14,10 +11,7 @@ export const getProfile = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const customer = await Customer.findById(req.userId);
-    if (!customer) {
-      throw new AppError('Customer not found', 404);
-    }
+    const customer = await CustomerService.getProfile(req.userId as string);
 
     sendSuccess(res, { customer });
   } catch (error) {
@@ -36,27 +30,11 @@ export const updateProfile = async (
   try {
     const { firstName, lastName, phone } = req.body;
 
-    const customer = await Customer.findById(req.userId);
-    if (!customer) {
-      throw new AppError('Customer not found', 404);
-    }
-
-    // Update fields if provided
-    if (firstName) customer.firstName = firstName;
-    if (lastName) customer.lastName = lastName;
-    if (phone) {
-      // Check if phone is already used by another customer
-      const existingCustomer = await Customer.findOne({
-        phone,
-        _id: { $ne: req.userId },
-      });
-      if (existingCustomer) {
-        throw new AppError('Phone number already in use', 409);
-      }
-      customer.phone = phone;
-    }
-
-    await customer.save();
+    const customer = await CustomerService.updateProfile(req.userId as string, {
+      firstName,
+      lastName,
+      phone,
+    });
 
     sendSuccess(res, {
       message: 'Profile updated successfully',
@@ -78,20 +56,10 @@ export const changePassword = async (
   try {
     const { currentPassword, newPassword } = req.body;
 
-    const customer = await Customer.findById(req.userId).select('+password');
-    if (!customer) {
-      throw new AppError('Customer not found', 404);
-    }
-
-    // Verify current password
-    const isPasswordValid = await bcrypt.compare(currentPassword, customer.password);
-    if (!isPasswordValid) {
-      throw new AppError('Current password is incorrect', 401);
-    }
-
-    // Hash and save new password
-    customer.password = await bcrypt.hash(newPassword, 12);
-    await customer.save();
+    await CustomerService.changePassword(req.userId as string, {
+      currentPassword,
+      newPassword,
+    });
 
     sendSuccess(res, { message: 'Password changed successfully' });
   } catch (error) {
@@ -108,19 +76,9 @@ export const getBalance = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const customer = await Customer.findById(req.userId);
-    if (!customer) {
-      throw new AppError('Customer not found', 404);
-    }
+    const balanceData = await CustomerService.getBalance(req.userId as string);
 
-    const isLowBalance = customer.balance < customer.lowBalanceThreshold;
-
-    sendSuccess(res, {
-      balance: customer.balance,
-      customerId: customer._id,
-      lowBalanceWarning: isLowBalance,
-      lowBalanceThreshold: customer.lowBalanceThreshold,
-    });
+    sendSuccess(res, balanceData);
   } catch (error) {
     next(error);
   }
@@ -137,25 +95,14 @@ export const getTransactionHistory = async (
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
-    const skip = (page - 1) * limit;
 
-    const transactions = await Transaction.find({ customerId: req.userId })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('processedBy', 'firstName lastName email');
+    const result = await CustomerService.getTransactionHistory(
+      req.userId as string,
+      page,
+      limit
+    );
 
-    const total = await Transaction.countDocuments({ customerId: req.userId });
-
-    sendSuccess(res, {
-      transactions,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    });
+    sendSuccess(res, result);
   } catch (error) {
     next(error);
   }
@@ -172,14 +119,10 @@ export const getTransaction = async (
   try {
     const { transactionId } = req.params;
 
-    const transaction = await Transaction.findOne({
-      _id: transactionId,
-      customerId: req.userId,
-    }).populate('processedBy', 'firstName lastName email');
-
-    if (!transaction) {
-      throw new AppError('Transaction not found', 404);
-    }
+    const transaction = await CustomerService.getTransaction(
+      req.userId as string,
+      transactionId
+    );
 
     sendSuccess(res, { transaction });
   } catch (error) {
@@ -196,20 +139,7 @@ export const getDevices = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const customer = await Customer.findById(req.userId);
-    if (!customer) {
-      throw new AppError('Customer not found', 404);
-    }
-
-    // Return devices without the actual deviceId (security)
-    const devices = customer.devices.map((device) => ({
-      id: (device as any)._id ?? (device as any).id,
-      deviceIdHash: device.deviceIdHash,
-      isVerified: device.isVerified,
-      verifiedAt: device.verifiedAt,
-      lastLoginAt: device.lastLoginAt,
-      createdAt: device.createdAt,
-    }));
+    const devices = await CustomerService.getDevices(req.userId as string);
 
     sendSuccess(res, { devices });
   } catch (error) {

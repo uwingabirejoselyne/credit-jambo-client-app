@@ -36,7 +36,6 @@ const DeviceSchema = new Schema<IDevice>({
   deviceIdHash: {
     type: String,
     required: true,
-    unique: true,
   },
   isVerified: {
     type: Boolean,
@@ -129,8 +128,7 @@ const CustomerSchema = new Schema<ICustomer>(
 );
 
 // Indexes for better query performance
-CustomerSchema.index({ email: 1 });
-CustomerSchema.index({ phone: 1 });
+// Note: email and phone already have unique indexes from field definitions
 CustomerSchema.index({ 'devices.deviceIdHash': 1 });
 
 // Virtual for full name

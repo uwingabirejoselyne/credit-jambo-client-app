@@ -78,8 +78,9 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
     const response = await axiosInstance.post('/auth/login/customer', data);
 
     if (response.data.success) {
-      const token = response.data.token;
-      const customer = response.data.customer;
+      // Backend wraps response in data.data structure
+      const token = response.data.data?.token;
+      const customer = response.data.data?.customer;
 
       if (!token || !customer) {
         throw new Error("Invalid login response");
@@ -97,7 +98,7 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
 
       return {
         success: true,
-        message: response.data.message,
+        message: response.data.data?.message || response.data.message,
         data: {
           user: {
             id: customer.id,

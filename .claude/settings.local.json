@@ -5,7 +5,8 @@
       "Bash(npm run build:*)",
       "Bash(timeout 10 npm run dev:*)",
       "Bash(cat:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(npx ts-node:*)"
     ],
     "deny": [],
     "ask": []

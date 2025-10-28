@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
+import { TransactionService } from '../services/transaction.service';
 import { Customer } from '../models/customer.model';
 import { Transaction, TransactionType, TransactionStatus } from '../models/transaction.model';
 import { AppError } from '../utils/error.util';
@@ -14,53 +15,22 @@ export const createDeposit = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     const { customerId, amount, description } = req.body;
 
-    const customer = await Customer.findById(customerId).session(session);
-    if (!customer) {
-      throw new AppError('Customer not found', 404);
-    }
-
-    if (!customer.isActive) {
-      throw new AppError('Customer account is inactive', 403);
-    }
-
-    const balanceBefore = customer.balance;
-    const balanceAfter = balanceBefore + amount;
-
-    // Create transaction
-    const transaction = await Transaction.create([{
-      customerId: customer._id,
-      type: TransactionType.DEPOSIT,
+    const transaction = await TransactionService.adminCreateDeposit(
+      customerId,
       amount,
-      balanceBefore,
-      balanceAfter,
-      status: TransactionStatus.COMPLETED,
       description,
-      reference: `DEP-${uuidv4().substring(0, 8).toUpperCase()}`,
-      processedBy: req.userId,
-      processedAt: new Date(),
-    }], { session });
-
-    // Update customer balance
-    customer.balance = balanceAfter;
-    await customer.save({ session });
-
-    await session.commitTransaction();
+      req.userId as string
+    );
 
     sendSuccess(res, {
       message: 'Deposit successful',
-      transaction: transaction[0],
+      transaction,
     }, 201);
   } catch (error) {
-    await session.abortTransaction();
     next(error);
-  } finally {
-    session.endSession();
   }
 };
 
@@ -72,58 +42,22 @@ export const createWithdrawal = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     const { customerId, amount, description } = req.body;
 
-    const customer = await Customer.findById(customerId).session(session);
-    if (!customer) {
-      throw new AppError('Customer not found', 404);
-    }
-
-    if (!customer.isActive) {
-      throw new AppError('Customer account is inactive', 403);
-    }
-
-    const balanceBefore = customer.balance;
-
-    if (balanceBefore < amount) {
-      throw new AppError('Insufficient balance', 400);
-    }
-
-    const balanceAfter = balanceBefore - amount;
-
-    // Create transaction
-    const transaction = await Transaction.create([{
-      customerId: customer._id,
-      type: TransactionType.WITHDRAWAL,
+    const transaction = await TransactionService.adminCreateWithdrawal(
+      customerId,
       amount,
-      balanceBefore,
-      balanceAfter,
-      status: TransactionStatus.COMPLETED,
       description,
-      reference: `WTH-${uuidv4().substring(0, 8).toUpperCase()}`,
-      processedBy: req.userId,
-      processedAt: new Date(),
-    }], { session });
-
-    // Update customer balance
-    customer.balance = balanceAfter;
-    await customer.save({ session });
-
-    await session.commitTransaction();
+      req.userId as string
+    );
 
     sendSuccess(res, {
       message: 'Withdrawal successful',
-      transaction: transaction[0],
+      transaction,
     }, 201);
   } catch (error) {
-    await session.abortTransaction();
     next(error);
-  } finally {
-    session.endSession();
   }
 };
 
@@ -225,53 +159,20 @@ export const customerDeposit = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     const { amount, description } = req.body;
-    const customerId = req.userId; // From auth middleware
 
-    const customer = await Customer.findById(customerId).session(session);
-    if (!customer) {
-      throw new AppError('Customer not found', 404);
-    }
-
-    if (!customer.isActive) {
-      throw new AppError('Account is inactive', 403);
-    }
-
-    const balanceBefore = customer.balance;
-    const balanceAfter = balanceBefore + amount;
-
-    // Create transaction
-    const transaction = await Transaction.create([{
-      customerId: customer._id,
-      type: TransactionType.DEPOSIT,
-      amount,
-      balanceBefore,
-      balanceAfter,
-      status: TransactionStatus.COMPLETED,
-      description,
-      reference: `DEP-${uuidv4().substring(0, 8).toUpperCase()}`,
-      processedAt: new Date(),
-    }], { session });
-
-    // Update customer balance
-    customer.balance = balanceAfter;
-    await customer.save({ session });
-
-    await session.commitTransaction();
+    const transaction = await TransactionService.customerDeposit(
+      req.userId as string,
+      { amount, description }
+    );
 
     sendSuccess(res, {
       message: 'Deposit successful',
-      data: transaction[0],
+      data: transaction,
     }, 201);
   } catch (error) {
-    await session.abortTransaction();
     next(error);
-  } finally {
-    session.endSession();
   }
 };
 
@@ -283,59 +184,20 @@ export const customerWithdraw = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     const { amount, description } = req.body;
-    const customerId = req.userId; // From auth middleware
 
-    const customer = await Customer.findById(customerId).session(session);
-    if (!customer) {
-      throw new AppError('Customer not found', 404);
-    }
-
-    if (!customer.isActive) {
-      throw new AppError('Account is inactive', 403);
-    }
-
-    const balanceBefore = customer.balance;
-
-    // Prevent withdrawals exceeding balance
-    if (balanceBefore < amount) {
-      throw new AppError('Insufficient balance', 400);
-    }
-
-    const balanceAfter = balanceBefore - amount;
-
-    // Create transaction
-    const transaction = await Transaction.create([{
-      customerId: customer._id,
-      type: TransactionType.WITHDRAWAL,
-      amount,
-      balanceBefore,
-      balanceAfter,
-      status: TransactionStatus.COMPLETED,
-      description,
-      reference: `WTH-${uuidv4().substring(0, 8).toUpperCase()}`,
-      processedAt: new Date(),
-    }], { session });
-
-    // Update customer balance
-    customer.balance = balanceAfter;
-    await customer.save({ session });
-
-    await session.commitTransaction();
+    const transaction = await TransactionService.customerWithdraw(
+      req.userId as string,
+      { amount, description }
+    );
 
     sendSuccess(res, {
       message: 'Withdrawal successful',
-      data: transaction[0],
+      data: transaction,
     }, 201);
   } catch (error) {
-    await session.abortTransaction();
     next(error);
-  } finally {
-    session.endSession();
   }
 };
 
@@ -350,25 +212,14 @@ export const getTransactionHistory = async (
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const skip = (page - 1) * limit;
-    const customerId = req.userId; // From auth middleware
 
-    const transactions = await Transaction.find({ customerId })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const result = await TransactionService.getTransactionHistory(
+      req.userId as string,
+      page,
+      limit
+    );
 
-    const total = await Transaction.countDocuments({ customerId });
-
-    sendSuccess(res, {
-      transactions,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
+    sendSuccess(res, result);
   } catch (error) {
     next(error);
   }
@@ -385,14 +236,7 @@ export const getTransaction = async (
   try {
     const { transactionId } = req.params;
 
-    const transaction = await Transaction.findById(transactionId)
-      .populate('customerId', 'firstName lastName email')
-      .populate('processedBy', 'firstName lastName email')
-      .populate('relatedTransactionId');
-
-    if (!transaction) {
-      throw new AppError('Transaction not found', 404);
-    }
+    const transaction = await TransactionService.getTransaction(transactionId);
 
     sendSuccess(res, { transaction });
   } catch (error) {
