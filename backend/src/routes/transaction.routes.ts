@@ -5,6 +5,13 @@ import { validateMongoId, validatePagination } from '../middleware/validation.mi
 import { body } from 'express-validator';
 import { handleValidationErrors } from '../middleware/validation.middleware';
 
+/**
+ * @swagger
+ * tags:
+ *   name: Transactions
+ *   description: API for managing financial transactions
+ */
+
 const router = Router();
 
 // All transaction routes require customer authentication

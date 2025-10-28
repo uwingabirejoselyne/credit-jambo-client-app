@@ -5,9 +5,11 @@ import compression from 'compression';
 import morgan from 'morgan';
 import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
+import swaggerUi from 'swagger-ui-express';
 import { databaseConnection } from './config/database.config';
 import { envConfig } from './config/env.config';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
+import { specs } from './config/swagger.config';
 
 // Import routes
 import routes from './routes';
@@ -48,6 +50,9 @@ app.get('/health', (_, res) => {
 
 // Routes
 app.use('/api', routes);
+
+// Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // 404 handler
 app.use(notFoundHandler);

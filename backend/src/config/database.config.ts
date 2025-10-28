@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { envConfig, isTest } from './env.config';
+import { envConfig } from './env.config';
 
 class DatabaseConnection {
   private static instance: DatabaseConnection;
@@ -16,12 +16,12 @@ class DatabaseConnection {
 
   public async connect(): Promise<void> {
     if (this.isConnected) {
-      console.log('Database already connected');
+      console.log('⚠️ Database already connected');
       return;
     }
 
     try {
-      const uri = isTest ? envConfig.MONGODB_URI_TEST : envConfig.MONGODB_URI;
+      const uri = envConfig.isTest ? envConfig.MONGODB_URI_TEST : envConfig.MONGODB_URI;
 
       const options = {
         maxPoolSize: 10,
@@ -33,32 +33,30 @@ class DatabaseConnection {
       await mongoose.connect(uri, options);
 
       this.isConnected = true;
-      console.log(`✓ MongoDB connected successfully to: ${isTest ? 'TEST DB' : 'MAIN DB'}`);
+      console.log(`✅ MongoDB connected successfully to: ${envConfig.isTest ? 'TEST DB' : 'MAIN DB'}`);
 
-      // Handle connection events
       mongoose.connection.on('error', (error) => {
-        console.error('MongoDB connection error:', error);
+        console.error('❌ MongoDB connection error:', error);
         this.isConnected = false;
       });
 
       mongoose.connection.on('disconnected', () => {
-        console.log('MongoDB disconnected');
+        console.log('⚠️ MongoDB disconnected');
         this.isConnected = false;
       });
 
       mongoose.connection.on('reconnected', () => {
-        console.log('MongoDB reconnected');
+        console.log('🔄 MongoDB reconnected');
         this.isConnected = true;
       });
 
-      // Handle process termination
       process.on('SIGINT', async () => {
         await this.disconnect();
         process.exit(0);
       });
 
     } catch (error) {
-      console.error('Failed to connect to MongoDB:', error);
+      console.error('❌ Failed to connect to MongoDB:', error);
       throw error;
     }
   }
@@ -71,9 +69,9 @@ class DatabaseConnection {
     try {
       await mongoose.connection.close();
       this.isConnected = false;
-      console.log('MongoDB connection closed');
+      console.log('⛔ MongoDB connection closed');
     } catch (error) {
-      console.error('Error closing MongoDB connection:', error);
+      console.error('❌ Error closing MongoDB connection:', error);
       throw error;
     }
   }
@@ -82,6 +80,5 @@ class DatabaseConnection {
     return this.isConnected && mongoose.connection.readyState === 1;
   }
 }
-
 
 export const databaseConnection = DatabaseConnection.getInstance();

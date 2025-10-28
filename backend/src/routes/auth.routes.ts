@@ -6,6 +6,13 @@ import {
   validateLogin,
 } from '../middleware/validation.middleware';
 
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: API for user authentication
+ */
+
 const router = Router();
 
 // Public routes

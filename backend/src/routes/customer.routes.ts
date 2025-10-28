@@ -9,6 +9,13 @@ import {
 import { body } from 'express-validator';
 import { handleValidationErrors } from '../middleware/validation.middleware';
 
+/**
+ * @swagger
+ * tags:
+ *   name: Customers
+ *   description: API for managing customer profiles and information
+ */
+
 const router = Router();
 
 // All customer routes require authentication

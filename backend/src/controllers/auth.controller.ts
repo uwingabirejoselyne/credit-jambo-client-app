@@ -4,7 +4,82 @@ import { SessionType } from '../models/session.model';
 import { sendSuccess } from '../utils/response.util';
 
 /**
- * Register a new customer
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Register a new customer
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - firstName
+ *               - lastName
+ *               - email
+ *               - phone
+ *               - password
+ *               - deviceId
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john.doe@example.com
+ *               phone:
+ *                 type: string
+ *                 example: "+1234567890"
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: "securePassword123!"
+ *               deviceId:
+ *                 type: string
+ *                 example: "device123"
+ *     responses:
+ *       201:
+ *         description: Customer registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Registration successful. Please wait for admin to verify your device."
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     customer:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         email:
+ *                           type: string
+ *                           format: email
+ *                           example: "john.doe@example.com"
+ *                         firstName:
+ *                           type: string
+ *                           example: "John"
+ *                         lastName:
+ *                           type: string
+ *                           example: "Doe"
+ *       400:
+ *         description: Bad request - invalid input
+ *       409:
+ *         description: Email already exists
  */
 export const registerCustomer = async (
   req: Request,
@@ -38,7 +113,81 @@ export const registerCustomer = async (
 };
 
 /**
- * Login customer
+ * @swagger
+ * /auth/login/customer:
+ *   post:
+ *     summary: Login customer
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - deviceId
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "john.doe@example.com"
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: "securePassword123!"
+ *               deviceId:
+ *                 type: string
+ *                 example: "device123"
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Login successful"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                     customer:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         email:
+ *                           type: string
+ *                           format: email
+ *                           example: "john.doe@example.com"
+ *                         firstName:
+ *                           type: string
+ *                           example: "John"
+ *                         lastName:
+ *                           type: string
+ *                           example: "Doe"
+ *                         phone:
+ *                           type: string
+ *                           example: "+1234567890"
+ *                         isActive:
+ *                           type: boolean
+ *                           example: true
+ *       400:
+ *         description: Bad request - invalid credentials
+ *       401:
+ *         description: Invalid credentials
+ *       403:
+ *         description: Device not verified
  */
 export const loginCustomer = async (
   req: Request,
@@ -67,7 +216,78 @@ export const loginCustomer = async (
 };
 
 /**
- * Login admin
+ * @swagger
+ * /auth/login/admin:
+ *   post:
+ *     summary: Login admin
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - deviceId
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "admin@example.com"
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: "adminPassword123!"
+ *               deviceId:
+ *                 type: string
+ *                 example: "device123"
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Login successful"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                     admin:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         email:
+ *                           type: string
+ *                           format: email
+ *                           example: "admin@example.com"
+ *                         firstName:
+ *                           type: string
+ *                           example: "Jane"
+ *                         lastName:
+ *                           type: string
+ *                           example: "Admin"
+ *                         role:
+ *                           type: string
+ *                           example: "ADMIN"
+ *       400:
+ *         description: Bad request - invalid credentials
+ *       401:
+ *         description: Invalid credentials
+ *       403:
+ *         description: Device not verified or insufficient permissions
  */
 export const loginAdmin = async (
   req: Request,
@@ -96,7 +316,29 @@ export const loginAdmin = async (
 };
 
 /**
- * Logout
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Logout successful"
+ *       401:
+ *         description: Unauthorized - invalid token
  */
 export const logout = async (
   req: Request,
@@ -113,7 +355,35 @@ export const logout = async (
 };
 
 /**
- * Refresh token
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Refresh authentication token
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Token refreshed"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *       401:
+ *         description: Unauthorized - invalid token
  */
 export const refreshToken = async (
   req: Request,

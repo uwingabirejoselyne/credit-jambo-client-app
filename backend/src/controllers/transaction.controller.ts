@@ -8,7 +8,96 @@ import { AppError } from '../utils/error.util';
 import { sendSuccess } from '../utils/response.util';
 
 /**
- * Create deposit transaction (Admin only)
+ * @swagger
+ * /transactions/deposit:
+ *   post:
+ *     summary: Create deposit transaction (Admin only)
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - customerId
+ *               - amount
+ *             properties:
+ *               customerId:
+ *                 type: string
+ *                 example: "507f1f77bcf86cd799439011"
+ *               amount:
+ *                 type: number
+ *                 example: 100.00
+ *                 minimum: 0.01
+ *               description:
+ *                 type: string
+ *                 example: "Deposit description"
+ *                 maxLength: 500
+ *     responses:
+ *       201:
+ *         description: Deposit successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Deposit successful"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     transaction:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         customerId:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         type:
+ *                           type: string
+ *                           example: "DEPOSIT"
+ *                         amount:
+ *                           type: number
+ *                           example: 100.00
+ *                         balanceBefore:
+ *                           type: number
+ *                           example: 1000.00
+ *                         balanceAfter:
+ *                           type: number
+ *                           example: 1100.00
+ *                         status:
+ *                           type: string
+ *                           example: "COMPLETED"
+ *                         description:
+ *                           type: string
+ *                           example: "Deposit description"
+ *                         reference:
+ *                           type: string
+ *                           example: "DEP-ABC123"
+ *                         processedBy:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2023-01-01T00:00:00.000Z"
+ *       400:
+ *         description: Bad request - invalid input
+ *       401:
+ *         description: Unauthorized - invalid token
+ *       403:
+ *         description: Forbidden - insufficient permissions
+ *       404:
+ *         description: Customer not found
  */
 export const createDeposit = async (
   req: Request,
@@ -35,7 +124,96 @@ export const createDeposit = async (
 };
 
 /**
- * Create withdrawal transaction (Admin only)
+ * @swagger
+ * /transactions/withdraw:
+ *   post:
+ *     summary: Create withdrawal transaction (Admin only)
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - customerId
+ *               - amount
+ *             properties:
+ *               customerId:
+ *                 type: string
+ *                 example: "507f1f77bcf86cd799439011"
+ *               amount:
+ *                 type: number
+ *                 example: 50.00
+ *                 minimum: 0.01
+ *               description:
+ *                 type: string
+ *                 example: "Withdrawal description"
+ *                 maxLength: 500
+ *     responses:
+ *       201:
+ *         description: Withdrawal successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Withdrawal successful"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     transaction:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         customerId:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         type:
+ *                           type: string
+ *                           example: "WITHDRAWAL"
+ *                         amount:
+ *                           type: number
+ *                           example: 50.00
+ *                         balanceBefore:
+ *                           type: number
+ *                           example: 1100.00
+ *                         balanceAfter:
+ *                           type: number
+ *                           example: 1050.00
+ *                         status:
+ *                           type: string
+ *                           example: "COMPLETED"
+ *                         description:
+ *                           type: string
+ *                           example: "Withdrawal description"
+ *                         reference:
+ *                           type: string
+ *                           example: "WDR-ABC123"
+ *                         processedBy:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2023-01-01T00:00:00.000Z"
+ *       400:
+ *         description: Bad request - invalid input
+ *       401:
+ *         description: Unauthorized - invalid token
+ *       403:
+ *         description: Forbidden - insufficient permissions
+ *       404:
+ *         description: Customer not found
  */
 export const createWithdrawal = async (
   req: Request,
@@ -62,7 +240,128 @@ export const createWithdrawal = async (
 };
 
 /**
- * Create transfer between customers (Admin only)
+ * @swagger
+ * /transactions/transfer:
+ *   post:
+ *     summary: Create transfer between customers (Admin only)
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fromCustomerId
+ *               - toCustomerId
+ *               - amount
+ *             properties:
+ *               fromCustomerId:
+ *                 type: string
+ *                 example: "507f1f77bcf86cd799439011"
+ *               toCustomerId:
+ *                 type: string
+ *                 example: "507f1f77bcf86cd799439012"
+ *               amount:
+ *                 type: number
+ *                 example: 75.00
+ *                 minimum: 0.01
+ *               description:
+ *                 type: string
+ *                 example: "Transfer description"
+ *                 maxLength: 500
+ *     responses:
+ *       201:
+ *         description: Transfer successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Transfer successful"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     transactions:
+ *                       type: object
+ *                       properties:
+ *                         transferOut:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: string
+ *                               example: "507f1f77bcf86cd799439013"
+ *                             type:
+ *                               type: string
+ *                               example: "TRANSFER_OUT"
+ *                             amount:
+ *                               type: number
+ *                               example: 75.00
+ *                             balanceBefore:
+ *                               type: number
+ *                               example: 1000.00
+ *                             balanceAfter:
+ *                               type: number
+ *                               example: 925.00
+ *                             status:
+ *                               type: string
+ *                               example: "COMPLETED"
+ *                             description:
+ *                               type: string
+ *                               example: "Transfer to John Doe"
+ *                             reference:
+ *                               type: string
+ *                               example: "TRF-ABC123"
+ *                             createdAt:
+ *                               type: string
+ *                               format: date-time
+ *                               example: "2023-01-01T00:00:00.000Z"
+ *                         transferIn:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: string
+ *                               example: "507f1f77bcf86cd799439014"
+ *                             type:
+ *                               type: string
+ *                               example: "TRANSFER_IN"
+ *                             amount:
+ *                               type: number
+ *                               example: 75.00
+ *                             balanceBefore:
+ *                               type: number
+ *                               example: 500.00
+ *                             balanceAfter:
+ *                               type: number
+ *                               example: 575.00
+ *                             status:
+ *                               type: string
+ *                               example: "COMPLETED"
+ *                             description:
+ *                               type: string
+ *                               example: "Transfer from Jane Smith"
+ *                             reference:
+ *                               type: string
+ *                               example: "TRF-ABC123"
+ *                             createdAt:
+ *                               type: string
+ *                               format: date-time
+ *                               example: "2023-01-01T00:00:00.000Z"
+ *       400:
+ *         description: Bad request - invalid input or insufficient balance
+ *       401:
+ *         description: Unauthorized - invalid token
+ *       403:
+ *         description: Forbidden - insufficient permissions or inactive account
+ *       404:
+ *         description: Customer not found
  */
 export const createTransfer = async (
   req: Request,
@@ -177,7 +476,84 @@ export const customerDeposit = async (
 };
 
 /**
- * Customer withdrawal (Self-service)
+ * @swagger
+ * /transactions/withdraw:
+ *   post:
+ *     summary: Create customer withdrawal transaction (self-service)
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - amount
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 example: 50.00
+ *                 minimum: 0.01
+ *               description:
+ *                 type: string
+ *                 example: "Withdrawal description"
+ *                 maxLength: 500
+ *     responses:
+ *       201:
+ *         description: Withdrawal successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Withdrawal successful"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     transaction:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         type:
+ *                           type: string
+ *                           example: "WITHDRAWAL"
+ *                         amount:
+ *                           type: number
+ *                           example: 50.00
+ *                         balanceBefore:
+ *                           type: number
+ *                           example: 1000.00
+ *                         balanceAfter:
+ *                           type: number
+ *                           example: 950.00
+ *                         status:
+ *                           type: string
+ *                           example: "COMPLETED"
+ *                         description:
+ *                           type: string
+ *                           example: "Withdrawal description"
+ *                         reference:
+ *                           type: string
+ *                           example: "WDR-ABC123"
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2023-01-01T00:00:00.000Z"
+ *       400:
+ *         description: Bad request - invalid input or insufficient balance
+ *       401:
+ *         description: Unauthorized - invalid token
+ *       403:
+ *         description: Forbidden - insufficient permissions
  */
 export const customerWithdraw = async (
   req: Request,
@@ -202,7 +578,95 @@ export const customerWithdraw = async (
 };
 
 /**
- * Get transaction history for customer
+ * @swagger
+ * /transactions/history:
+ *   get:
+ *     summary: Get customer transaction history
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of transactions per page
+ *     responses:
+ *       200:
+ *         description: Transaction history retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     transactions:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             example: "507f1f77bcf86cd799439011"
+ *                           type:
+ *                             type: string
+ *                             example: "DEPOSIT"
+ *                           amount:
+ *                             type: number
+ *                             example: 100.00
+ *                           balanceBefore:
+ *                             type: number
+ *                             example: 1000.00
+ *                           balanceAfter:
+ *                             type: number
+ *                             example: 1100.00
+ *                           status:
+ *                             type: string
+ *                             example: "COMPLETED"
+ *                           description:
+ *                             type: string
+ *                             example: "Deposit transaction"
+ *                           reference:
+ *                             type: string
+ *                             example: "DEP-ABC123"
+ *                           createdAt:
+ *                             type: string
+ *                             format: date-time
+ *                             example: "2023-01-01T00:00:00.000Z"
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         page:
+ *                           type: integer
+ *                           example: 1
+ *                         limit:
+ *                           type: integer
+ *                           example: 10
+ *                         total:
+ *                           type: integer
+ *                           example: 100
+ *                         totalPages:
+ *                           type: integer
+ *                           example: 10
+ *       401:
+ *         description: Unauthorized - invalid token
+ *       404:
+ *         description: Customer not found
  */
 export const getTransactionHistory = async (
   req: Request,
@@ -226,7 +690,72 @@ export const getTransactionHistory = async (
 };
 
 /**
- * Get transaction by ID
+ * @swagger
+ * /transactions/{transactionId}:
+ *   get:
+ *     summary: Get transaction by ID
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: transactionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the transaction to retrieve
+ *     responses:
+ *       200:
+ *         description: Transaction retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     transaction:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         type:
+ *                           type: string
+ *                           example: "DEPOSIT"
+ *                         amount:
+ *                           type: number
+ *                           example: 100.00
+ *                         balanceBefore:
+ *                           type: number
+ *                           example: 1000.00
+ *                         balanceAfter:
+ *                           type: number
+ *                           example: 1100.00
+ *                         status:
+ *                           type: string
+ *                           example: "COMPLETED"
+ *                         description:
+ *                           type: string
+ *                           example: "Deposit transaction"
+ *                         reference:
+ *                           type: string
+ *                           example: "DEP-ABC123"
+ *                         processedBy:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2023-01-01T00:00:00.000Z"
+ *       401:
+ *         description: Unauthorized - invalid token
+ *       404:
+ *         description: Transaction not found
  */
 export const getTransaction = async (
   req: Request,
@@ -245,7 +774,99 @@ export const getTransaction = async (
 };
 
 /**
- * Cancel pending transaction (Admin only)
+ * @swagger
+ * /transactions/{transactionId}:
+ *   delete:
+ *     summary: Cancel pending transaction (Admin only)
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: transactionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the transaction to cancel
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - reason
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 example: "Fraudulent transaction"
+ *                 description: Reason for cancelling the transaction
+ *     responses:
+ *       200:
+ *         description: Transaction cancelled successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Transaction cancelled successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     transaction:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         type:
+ *                           type: string
+ *                           example: "DEPOSIT"
+ *                         amount:
+ *                           type: number
+ *                           example: 100.00
+ *                         balanceBefore:
+ *                           type: number
+ *                           example: 1000.00
+ *                         balanceAfter:
+ *                           type: number
+ *                           example: 1100.00
+ *                         status:
+ *                           type: string
+ *                           example: "CANCELLED"
+ *                         description:
+ *                           type: string
+ *                           example: "Deposit transaction"
+ *                         failureReason:
+ *                           type: string
+ *                           example: "Fraudulent transaction"
+ *                         reference:
+ *                           type: string
+ *                           example: "DEP-ABC123"
+ *                         processedBy:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2023-01-01T00:00:00.000Z"
+ *                         processedAt:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2023-01-01T00:00:00.000Z"
+ *       400:
+ *         description: Bad request - transaction is not pending
+ *       401:
+ *         description: Unauthorized - invalid token
+ *       403:
+ *         description: Forbidden - insufficient permissions
+ *       404:
+ *         description: Transaction not found
  */
 export const cancelTransaction = async (
   req: Request,
