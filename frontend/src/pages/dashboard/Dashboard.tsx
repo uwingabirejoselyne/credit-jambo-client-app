@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../store/contexts/AuthContext';
 import { useAccount } from '../../store/contexts/AccountContext';
 import { Navbar } from '../../components/common/Navbar';
-import { Card, Loading, Alert } from '../../components/common';
+import { Card, Alert } from '../../components/common';
 import { formatCurrency } from '../../utils/formatters';
 import { DepositModal } from '../../components/transactions/DepositModal';
 import { WithdrawModal } from '../../components/transactions/WithdrawModal';

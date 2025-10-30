@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
+import axios, { type InternalAxiosRequestConfig, type AxiosError, type AxiosInstance } from 'axios';
 
 /**
  * Axios instance configuration with interceptors

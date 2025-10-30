@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { getBalance, type AccountBalance } from '../../services/api/accountService';
+import { getBalance } from '../../services/api/accountService';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 

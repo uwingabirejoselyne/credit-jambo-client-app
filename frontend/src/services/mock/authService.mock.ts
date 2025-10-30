@@ -157,7 +157,7 @@ export const refreshToken = async (): Promise<string | null> => {
 /**
  * Check if token is expired (mock - always return false for demo)
  */
-export const isTokenExpired = (token: string): boolean => {
+export const isTokenExpired = (): boolean => {
   return false;
 };
 
@@ -174,5 +174,5 @@ export const getCurrentUser = () => {
  */
 export const isAuthenticated = (): boolean => {
   const token = localStorage.getItem('accessToken');
-  return token !== null && !isTokenExpired(token);
+  return token !== null && !isTokenExpired();
 };
