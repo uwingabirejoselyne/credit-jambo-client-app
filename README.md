@@ -200,13 +200,3 @@ The application follows a layered architecture with clear separation between fro
 
 Contributions are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
-## License
-
-Copyright © 2025 Credit Jambo Ltd. All rights reserved.
-
-## Contact
-
-For issues or questions:
-- Email: hello@creditjambo.com
-- Phone: +250 788 268 451
-- Address: NM 233 St, Nyamagumba, Musanze – Rwanda
