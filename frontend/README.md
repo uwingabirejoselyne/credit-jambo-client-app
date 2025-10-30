@@ -25,9 +25,6 @@ A modern, secure savings management system built with React, TypeScript, and Tai
 
 - **Modern UI/UX**
   - Responsive design
-  - 3-color professional theme (Green, Blue, Orange)
-  - Gradient backgrounds and components
-  - Smooth animations and transitions
   - Toast notifications
 
 ## Tech Stack

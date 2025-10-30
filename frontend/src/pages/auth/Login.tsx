@@ -138,19 +138,19 @@ export const Login: React.FC = () => {
 
       <div className="max-w-md w-full relative z-10">
         {/* Logo/Brand Section */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-600 from-secondary-500 to-primary-500 rounded-2xl mb-4 shadow-lg">
+        <div className="text-center mt-1 mb-1">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-600  rounded-2xl mb-4 shadow-lg">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-4xl font-bold text-green-600 mb-2">Credit Jambo</h1>
+          <h1 className="text-4xl font-bold text-green-600 mb-1">Credit Jambo</h1>
           <p className="text-gray-600 text-lg">Welcome Back!</p>
         </div>
 
         <div className="card">
           {showDeviceWarning && (
-            <div className="bg-gradient-to-r from-accent-50 to-red-50 border-l-4 border-accent-600 p-4 rounded-lg mb-6">
+            <div className="bg-gradient-to-r from-accent-50 to-red-50 border-l-4 border-accent-600 p-4 rounded-lg mb-3">
               <div className="flex items-start">
                 <svg className="w-5 h-5 text-accent-600 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -241,7 +241,7 @@ export const Login: React.FC = () => {
 
           {/* Security Info */}
           <div className="mt-6 pt-6 border-t border-gray-100">
-            <div className="bg-gradient-to-r from-secondary-50 to-primary-50 border-l-4 border-green-500 p-4 rounded-lg">
+            <div className="bg-gradient-to-r from-secondary-50 to-primary-50 border-l-4 border-green-500 p-2 rounded-lg">
               <div className="flex items-start">
                 <svg className="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />

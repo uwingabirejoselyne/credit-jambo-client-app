@@ -64,10 +64,11 @@ backend/
 
 ### Installation
 
-1. Clone the repository and navigate to backend directory:
-```bash
-cd backend
-```
+1. **Clone the repository** (if not already done):
+   ```bash
+   git clone `https://github.com/uwingabirejoselyne/credit-jambo-client-app`
+   cd credit-jambo-client-app/backend
+   ```
 
 2. Install dependencies:
 ```bash
@@ -108,6 +109,9 @@ npm test
 ```
 
 ## API Documentation
+```
+http://localhost:5000/api-docs/
+````
 
 ### Base URL
 ```
@@ -144,11 +148,11 @@ http://localhost:5000/api/v1
 ### Account Endpoints (Authenticated)
 
 #### Get Balance
-- **GET** `/account/balance`
+- **GET** `/customers/balance`
 - **Headers**: `Authorization: Bearer <token>`
 
 #### Get Transaction History
-- **GET** `/account/transactions`
+- **GET** `/customers/transactions`
 - **Headers**: `Authorization: Bearer <token>`
 
 ### Transaction Endpoints (Authenticated)
