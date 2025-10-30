@@ -7,7 +7,6 @@ yarn.lock
 .env
 .env.local
 .env.*.local
-.claude
 
 # Build outputs
 dist/

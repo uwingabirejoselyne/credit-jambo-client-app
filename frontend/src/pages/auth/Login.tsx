@@ -214,7 +214,7 @@ export const Login: React.FC = () => {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="text-black hover:text-secondary-700 font-medium transition-colors">
+                <a href="#" className="text-black hover:text-green-600 font-medium transition-colors">
                   Forgot password?
                 </a>
               </div>

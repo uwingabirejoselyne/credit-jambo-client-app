@@ -91,7 +91,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ onClose, onSuccess }
 
         {/* Header */}
         <div className="mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-primary-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
@@ -131,7 +131,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ onClose, onSuccess }
           <div className="flex space-x-3 pt-4">
             <Button
               type="button"
-              variant="secondary"
+              variant="danger"
               fullWidth
               onClick={onClose}
             >
