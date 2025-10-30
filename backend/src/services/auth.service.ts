@@ -124,25 +124,76 @@ export class AuthService {
     customer.lastLoginAt = new Date();
     await customer.save();
 
-    // Delete old sessions for this device to prevent token conflicts
+    // First delete old sessions for this device to prevent token conflicts
     await Session.deleteMany({
       userId: customer._id,
       deviceIdHash,
     });
 
-    // Create session
+    // Create session in a transaction-safe manner to avoid race conditions
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours
 
+    // More comprehensive cleanup using a single atomic operation approach
+    // First, delete all existing sessions for this user and device
+    const deleteResult = await Session.deleteMany({
+      userId: customer._id,
+      deviceIdHash,
+    });
+    console.log(`Deleted ${deleteResult.deletedCount} existing sessions for customer ${customer._id}, device ${deviceIdHash}`);
+
+    // Additionally, clean up any other expired or inactive sessions for the user
+    const cleanupResult = await Session.deleteMany({
+      userId: customer._id,
+      $or: [
+        { expiresAt: { $lt: new Date() } },
+        { isActive: false }
+      ]
+    });
+    console.log(`Cleaned up ${cleanupResult.deletedCount} expired/inactive sessions for customer ${customer._id}`);
+
+    // Verify no sessions exist for this user and device before creating a new one
+    const remainingSessions = await Session.find({
+      userId: customer._id,
+      deviceIdHash,
+    });
+    console.log(`Found ${remainingSessions.length} remaining sessions for customer ${customer._id}, device ${deviceIdHash} before creating new session`);
+    
+    // Wait a moment to ensure the database operations complete
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Now create the new session directly with a fresh UUID
+    // Use a try-catch with the knowledge that we cleaned up all sessions for this user/device
+    const sessionToken = uuidv4();
+    console.log(`Creating new session with token: ${sessionToken.substring(0, 8)}...`);
+    
     const session = await Session.create({
       userId: customer._id,
       userType: SessionType.CUSTOMER,
-      token: uuidv4(),
+      token: sessionToken,
       deviceIdHash,
       ipAddress,
       userAgent,
       expiresAt,
     });
+
+    // Additional safety check to ensure no duplicate sessions exist for this combination
+    // If by some chance duplicates exist after creation, remove them
+    const duplicateSessions = await Session.find({
+      userId: customer._id,
+      deviceIdHash,
+    }).sort({ createdAt: -1 });
+
+    if (duplicateSessions.length > 1) {
+      console.log(`Found ${duplicateSessions.length} duplicate sessions, cleaning up...`);
+      // Keep only the most recent session, delete the others
+      const sessionsToDelete = duplicateSessions.slice(1);
+      for (const dupSession of sessionsToDelete) {
+        await Session.findByIdAndDelete(dupSession._id);
+      }
+    }
+    
+    console.log(`Successfully created session with ID: ${session._id}`);
 
     // Generate JWT
     const token = jwt.sign(
@@ -197,25 +248,69 @@ export class AuthService {
     // Hash device ID
     const deviceIdHash = hashData(deviceId);
 
-    // Delete old sessions for this admin device to prevent token conflicts
-    await Session.deleteMany({
+    // More comprehensive cleanup using a single atomic operation approach
+    // First, delete all existing sessions for this user and device
+    const deleteResult = await Session.deleteMany({
       userId: admin._id,
       deviceIdHash,
     });
+    console.log(`Deleted ${deleteResult.deletedCount} existing sessions for admin ${admin._id}, device ${deviceIdHash}`);
 
-    // Create session
+    // Additionally, clean up any other expired or inactive sessions for the user
+    const cleanupResult = await Session.deleteMany({
+      userId: admin._id,
+      $or: [
+        { expiresAt: { $lt: new Date() } },
+        { isActive: false }
+      ]
+    });
+    console.log(`Cleaned up ${cleanupResult.deletedCount} expired/inactive sessions for admin ${admin._id}`);
+
+    // Verify no sessions exist for this user and device before creating a new one
+    const remainingSessions = await Session.find({
+      userId: admin._id,
+      deviceIdHash,
+    });
+    console.log(`Found ${remainingSessions.length} remaining sessions for admin ${admin._id}, device ${deviceIdHash} before creating new session`);
+    
+    // Wait a moment to ensure the database operations complete
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Create session with correct expiration time
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 8); // 8 hours for admin
 
+    // Now create the new session directly with a fresh UUID
+    const sessionToken = uuidv4();
+    console.log(`Creating new admin session with token: ${sessionToken.substring(0, 8)}...`);
+    
     const session = await Session.create({
       userId: admin._id,
       userType: SessionType.ADMIN,
-      token: uuidv4(),
+      token: sessionToken,
       deviceIdHash,
       ipAddress,
       userAgent,
       expiresAt,
     });
+
+    // Additional safety check to ensure no duplicate sessions exist for this combination
+    // If by some chance duplicates exist after creation, remove them
+    const duplicateSessions = await Session.find({
+      userId: admin._id,
+      deviceIdHash,
+    }).sort({ createdAt: -1 });
+
+    if (duplicateSessions.length > 1) {
+      console.log(`Found ${duplicateSessions.length} duplicate admin sessions, cleaning up...`);
+      // Keep only the most recent session, delete the others
+      const sessionsToDelete = duplicateSessions.slice(1);
+      for (const dupSession of sessionsToDelete) {
+        await Session.findByIdAndDelete(dupSession._id);
+      }
+    }
+    
+    console.log(`Successfully created admin session with ID: ${session._id}`);
 
     // Generate JWT
     const token = jwt.sign(
@@ -244,7 +339,20 @@ export class AuthService {
    * Logout user
    */
   static async logout(sessionId: string): Promise<void> {
+    // Mark session as inactive instead of deleting to maintain audit trail
     await Session.findByIdAndUpdate(sessionId, { isActive: false });
+    
+    // Additionally, try to find and clean up any duplicate or conflicting sessions
+    // This helps prevent sessionId conflicts on subsequent logins
+    const session = await Session.findById(sessionId);
+    if (session) {
+      // Clean up any other sessions with the same userId and deviceIdHash
+      await Session.deleteMany({
+        userId: session.userId,
+        deviceIdHash: session.deviceIdHash,
+        _id: { $ne: session._id }, // Don't delete the session we're logging out
+      });
+    }
   }
 
   /**

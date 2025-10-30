@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 // Session types
 export enum SessionType {
@@ -20,6 +20,14 @@ export interface ISession extends Document {
   lastActivityAt: Date;
   createdAt: Date;
   updatedAt: Date;
+  updateActivity(): Promise<this>;
+}
+
+// Define static methods for Session model
+interface SessionModel extends Model<ISession> {
+  cleanupExpired(): Promise<{ deletedCount: number }>;
+  cleanupInactiveSessions(): Promise<{ deletedCount: number }>;
+  cleanupUserSessions(userId: string, deviceIdHash?: string): Promise<{ deletedCount: number }>;
 }
 
 // Schema for Session
@@ -112,4 +120,36 @@ SessionSchema.statics.cleanupExpired = async function () {
   });
 };
 
-export const Session = mongoose.model<ISession>('Session', SessionSchema);
+// Static method to cleanup inactive sessions (older than 30 days)
+SessionSchema.statics.cleanupInactiveSessions = async function () {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  return this.deleteMany({
+    isActive: false,
+    updatedAt: { $lt: thirtyDaysAgo }
+  });
+};
+
+// Static method to cleanup all expired and inactive sessions for a specific user
+SessionSchema.statics.cleanupUserSessions = async function (userId: string, deviceIdHash?: string) {
+  const query: any = { userId };
+  
+  if (deviceIdHash) {
+    query.deviceIdHash = deviceIdHash;
+  }
+  
+  return this.deleteMany({
+    $and: [
+      query,
+      {
+        $or: [
+          { expiresAt: { $lt: new Date() } },
+          { isActive: false }
+        ]
+      }
+    ]
+  });
+};
+
+export const Session = mongoose.model<ISession, SessionModel>('Session', SessionSchema);

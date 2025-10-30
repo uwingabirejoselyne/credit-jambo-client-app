@@ -10,6 +10,7 @@ import { databaseConnection } from './config/database.config';
 import { envConfig } from './config/env.config';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { specs } from './config/swagger.config';
+import { JobService } from './services/job.service';
 
 // Import routes
 import routes from './routes';
@@ -67,6 +68,9 @@ const startServer = async () => {
   try {
     // Connect to database
     await databaseConnection.connect();
+
+    // Initialize scheduled jobs
+    await JobService.initialize();
 
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);

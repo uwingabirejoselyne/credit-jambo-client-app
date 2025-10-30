@@ -35,7 +35,13 @@ export const errorHandler = (
   // Handle Mongoose duplicate key errors
   if (err.name === 'MongoServerError' && (err as any).code === 11000) {
     const field = Object.keys((err as any).keyPattern)[0];
-    sendError(_res, `${field} already exists`, 409);
+    
+    // Check if it's a session token duplicate error specifically
+    if (field === 'token') {
+      sendError(_res, 'Session token already exists, please try again', 409);
+    } else {
+      sendError(_res, `${field} already exists`, 409);
+    }
     return;
   }
 

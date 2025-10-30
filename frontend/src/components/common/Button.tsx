@@ -12,7 +12,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button: React.FC<ButtonProps> = ({
   children,
-  variant = 'primary',
+  variant = 'success',
   isLoading = false,
   fullWidth = false,
   className = '',
@@ -25,7 +25,7 @@ export const Button: React.FC<ButtonProps> = ({
     primary: 'bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white',
     secondary: 'bg-gradient-to-r from-secondary-600 to-secondary-500 hover:from-secondary-700 hover:to-secondary-600 text-white',
     danger: 'bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white',
-    success: 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white',
+    success: 'bg-green-600 hover:from-green-700 hover:to-green-600 text-white',
   };
 
   const widthStyles = fullWidth ? 'w-full' : '';

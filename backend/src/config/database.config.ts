@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
 import { envConfig } from './env.config';
+import { Session } from '../models/session.model'; // ✅ Import your Session model
 
 class DatabaseConnection {
   private static instance: DatabaseConnection;
-  private isConnected: boolean = false;
+  private isConnected = false;
 
   private constructor() {}
 
@@ -16,7 +17,7 @@ class DatabaseConnection {
 
   public async connect(): Promise<void> {
     if (this.isConnected) {
-      console.log('⚠️ Database already connected');
+      console.log(' Database already connected');
       return;
     }
 
@@ -28,25 +29,47 @@ class DatabaseConnection {
         minPoolSize: 2,
         socketTimeoutMS: 45000,
         serverSelectionTimeoutMS: 5000,
+        autoIndex: envConfig.isDevelopment, // ✅ Automatically create indexes in dev
       };
 
       await mongoose.connect(uri, options);
-
       this.isConnected = true;
-      console.log(`✅ MongoDB connected successfully to: ${envConfig.isTest ? 'TEST DB' : 'MAIN DB'}`);
 
+      console.log(` MongoDB connected successfully to: ${envConfig.isTest ? 'TEST DB' : 'MAIN DB'}`);
+
+      /**
+       * ✅ Fix: Handle stale index "sessionId_1"
+       * This prevents "E11000 duplicate key error: sessionId_1 dup key: { sessionId: null }"
+       */
+      try {
+        const indexes = await Session.collection.indexes();
+        const hasOldIndex = indexes.some((idx) => idx.name === 'sessionId_1');
+        if (hasOldIndex) {
+          console.warn(' Found old index sessionId_1 — dropping it...');
+          await Session.collection.dropIndex('sessionId_1');
+          console.log(' Old sessionId_1 index removed');
+        }
+
+        //  Ensure current schema indexes are up to date
+        await Session.syncIndexes();
+        console.log('Session indexes synced successfully');
+      } catch (indexError) {
+        console.error('Failed to sync Session indexes:', indexError);
+      }
+
+      // ----------------- Connection Events -----------------
       mongoose.connection.on('error', (error) => {
-        console.error('❌ MongoDB connection error:', error);
+        console.error(' MongoDB connection error:', error);
         this.isConnected = false;
       });
 
       mongoose.connection.on('disconnected', () => {
-        console.log('⚠️ MongoDB disconnected');
+        console.warn(' MongoDB disconnected');
         this.isConnected = false;
       });
 
       mongoose.connection.on('reconnected', () => {
-        console.log('🔄 MongoDB reconnected');
+        console.log('MongoDB reconnected');
         this.isConnected = true;
       });
 
@@ -56,22 +79,20 @@ class DatabaseConnection {
       });
 
     } catch (error) {
-      console.error('❌ Failed to connect to MongoDB:', error);
+      console.error(' Failed to connect to MongoDB:', error);
       throw error;
     }
   }
 
   public async disconnect(): Promise<void> {
-    if (!this.isConnected) {
-      return;
-    }
+    if (!this.isConnected) return;
 
     try {
       await mongoose.connection.close();
       this.isConnected = false;
-      console.log('⛔ MongoDB connection closed');
+      console.log('🔌 MongoDB connection closed');
     } catch (error) {
-      console.error('❌ Error closing MongoDB connection:', error);
+      console.error(' Error closing MongoDB connection:', error);
       throw error;
     }
   }
