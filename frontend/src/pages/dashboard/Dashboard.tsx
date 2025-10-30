@@ -53,7 +53,7 @@ export const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                Welcome back, <span className="gradient-text">{user?.fullName?.split(' ')[0]}</span>! 👋
+                Welcome back, <span className="text-green-600">{user?.fullName?.split(' ')[0]}</span>! 👋
               </h1>
               <p className="text-gray-600 mt-2 text-lg">Manage your savings and track your transactions</p>
             </div>
@@ -85,7 +85,7 @@ export const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Balance Card */}
           <div className="lg:col-span-2">
-            <div className="bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-600 rounded-2xl shadow-2xl p-8 text-white relative overflow-hidden transform transition-all duration-300 hover:shadow-3xl">
+            <div className="bg-green-600  rounded-2xl shadow-2xl p-8 text-white relative overflow-hidden transform transition-all duration-300 hover:shadow-3xl">
               {/* Animated Decorative circles */}
               <div className="absolute -top-20 -right-20 w-40 h-40 bg-white opacity-10 rounded-full animate-pulse"></div>
               <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white opacity-10 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
